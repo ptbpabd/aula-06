@@ -21,7 +21,60 @@ create table aula06.departmento
 predio varchar (15),
 orcamento aula06.Dollars);
 
--- Slide 14 
+-- Slide 10
+CREATE USER User_A WITH PASSWORD = 'PT23820x';
+
+-- Slide 12
+-- Criar uma Role
+CREATE ROLE instructor;
+
+-- Adicionar membros
+ALTER ROLE instructor ADD MEMBER User_A; 
+
+-- Adicionar permissões a uma Role
+GRANT SELECT ON takes to instructor;
+
+-- Roles podem ser concedidas para users, e também para outras roles
+CREATE ROLE teaching_assistant;
+ALTER ROLE instructor ADD MEMBER teaching_assistant;
+
+-- Slide 13
+-- Consultar Role criada
+SELECT 
+@@Servername as ServerName
+,DB_NAME() AS DatabaseName
+,d.name AS DatabaseUser
+,ISNULL(dr.name, 'Public') AS DatabaseRole
+,dp.permission_name as AdditionalPermission
+,dp.state_desc AS PermissionState
+,ISNULL(o.type_desc, 'N/A')  AS ObjectType
+,ISNULL(o.name, 'N/A') AS ObjectName
+FROM sys.database_principals d
+    LEFT JOIN sys.database_role_members r
+        ON d.principal_id = r.member_principal_id 
+    LEFT JOIN sys.database_principals dr
+        ON r.role_principal_id = dr.principal_id 
+    left JOIN   sys.database_permissions dp
+        ON d.principal_id = dp.grantee_principal_id
+    LEFT JOIN sys.objects o
+        ON dp.major_id = o.object_id 
+WHERE d.name IN ('instructor', 'teaching_assistant' );
+
+-- Slide 15
+-- Autorização sobre Views
+CREATE view aula06.geo_instructor as (select * from instructor where dept_name = 'Geology');
+
+GRANT SELECT ON aula06.geo_instructor to instructor;
+
+-- Slide 16
+-- Transferência de privilégios
+-- Conceder
+GRANT SELECT ON department to User_A with grant option;
+
+-- Revogar
+REVOKE SELECT ON department from User_A cascade;
+
+-- Slide 17 
 -- Listar usuários
 SELECT * FROM sysusers;
 
