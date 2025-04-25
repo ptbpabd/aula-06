@@ -8,38 +8,49 @@ departamento varchar (20),
 tot_cred numeric (3,0) default 0,
 primary key (ID));
 
+-- Numeric: (numerototaldedigitos, qtd casas após o .)
+
+-- O indice permite que voce acesse uma info, sem passar por milhares de outras linhas do banco de dados
 create index estudanteID_index on aula06.estudante(ID);
 
+-- CRIANDO INDEX com id nome
 create index estudanteIDnome_index on aula06.estudante(ID, nome);
 
 
 -- Slide 5
+
+-- criando tipo de dados
 create type aula06.Dollars from numeric(12,2) not null;
 
+-- usando o tipo de dado criado na criação de uma tabela
 create table aula06.departmento
 (departamento varchar (20),
 predio varchar (15),
 orcamento aula06.Dollars);
 
--- Slide 10
+-- Criando um usuario 
 CREATE USER User_A WITH PASSWORD = 'PT23820x';
 
--- Slide 12
--- Criar uma Role
+-- Criar uma Role:grupo
 CREATE ROLE instructor;
 
 -- Adicionar membros
+-- Adicionando membro user A na role 
 ALTER ROLE instructor ADD MEMBER User_A; 
 
 -- Adicionar permissões a uma Role
+-- Nesse caso permissao para selecionar a tabela takes para a role instructor
 GRANT SELECT ON takes to instructor;
 
 -- Roles podem ser concedidas para users, e também para outras roles
+-- criando role
 CREATE ROLE teaching_assistant;
+
 ALTER ROLE instructor ADD MEMBER teaching_assistant;
+-- adicionando uma role como membro de outra role
 
 -- Slide 13
--- Consultar Role criada
+-- Consultar Role criada: consultando os usuarios
 SELECT 
 @@Servername as ServerName
 ,DB_NAME() AS DatabaseName
@@ -60,18 +71,21 @@ FROM sys.database_principals d
         ON dp.major_id = o.object_id 
 WHERE d.name IN ('instructor', 'teaching_assistant' );
 
--- Slide 15
 -- Autorização sobre Views
+--Criando uma view
 CREATE view aula06.geo_instructor as (select * from instructor where dept_name = 'Geology');
 
+-- dando permissao para selecionar view para instructor, logo o user_a que esta dentro da role terá permissao para selecionar
 GRANT SELECT ON aula06.geo_instructor to instructor;
 
 -- Slide 16
 -- Transferência de privilégios
 -- Conceder
+-- Dando permissao para User A selecionar department e também dar permissão para outros usuarios
 GRANT SELECT ON department to User_A with grant option;
 
 -- Revogar
+--Revogando a permissao de user a e revogando a permissão de quem User A permitiu.
 REVOKE SELECT ON department from User_A cascade;
 
 -- Slide 17 
